@@ -1,30 +1,19 @@
-<h2>Trình quản lý API v3 NodeJS cho các cuộc tấn công Lớp 7</h2>
+# DDOS API
 
-<h4>API này rất an toàn và nhanh chóng (mất 2 lần ping giữa API và phần phụ trợ, tức là ping là 60ms, sẽ chỉ mất 120ms để khởi động cuộc tấn công)</h4>
+- Cảm ơn https://github.com/DauDau432
 
-<h4>Ưu điểm hơn bản v2 có thể xem được status quản lý và dừng được toàn bộ các cuộc tấn công của tất cả máy chủ đang chạy</h4>
-<h1>Cài đặt: trên centos</h1>
+> API này rất an toàn và nhanh chóng (mất 2 lần ping giữa API và phần phụ trợ, tức là ping là 60ms, sẽ chỉ mất 120ms để khởi động cuộc tấn công)
+>
+> Ưu điểm hơn bản v2 có thể xem được status quản lý và dừng được toàn bộ các cuộc tấn công của tất cả máy chủ đang chạy
 
-***cài đặt nodejs***
-```sh
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
-source ~/.nvm/nvm.sh
-nvm install 14.17.3
-nvm use 14.17.3
-npm i express mysql
-```
-***cài đặt cơ sở dữ liệu***
-```
-sudo yum install mariadb-server
-sudo systemctl start mariadb
-sudo systemctl enable mariadb
-sudo systemctl status mariadb
-sudo mysql_secure_installation
-mysql -u root -p
-```
-<h1>Setup:</h1>
+## Yêu cầu
 
-<h3>Update servers.json</h3><br>
+- NodeJS 14+
+- MariaDB (hoặc MySQL)
+
+## Cấu hình
+
+### Update `servers.json`
 
 ```json
 {
@@ -41,7 +30,7 @@ mysql -u root -p
 }
 ```
 
-<h3>Update commands.json</h3><br>
+### Update `commands.json`
 
 ```json
 {
@@ -50,7 +39,7 @@ mysql -u root -p
 }
 ```
 
-<h3>Update settings.json</h3><br>
+### Update `settings.json`
 
 ```json
 {
@@ -66,7 +55,7 @@ mysql -u root -p
 }
 ```
 
-<h3>Update client.js:</h3><br>
+### Update `client.js`
 
 ```js
 const socket_port = 8888; // cổng API
@@ -74,13 +63,19 @@ const socket_token = "SECRET_TOKEN"; // mã thông báo bí mật của bạn đ
 const allowed_ips = ['1.1.1.1']; // IP máy chủ API
 ```
 
-<h3>Thiết lập cơ sở dữ liệu</h3><br>
+## Thiết lập cơ sở dữ liệu
+
+Tạo database
 
 ```sql
 CREATE DATABASE manager;
 
 use manager;
+```
 
+Tạo bảng
+
+```sql
 CREATE TABLE `attacks` (
     `id` int(11) NOT NULL,
     `server` varchar(300) DEFAULT NULL,
@@ -97,9 +92,10 @@ ALTER TABLE `attacks` ADD PRIMARY KEY (`id`);
 ALTER TABLE `attacks` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 ```
 
-***sử lý lỗi từ chối kết nối***
+***Xử lý lỗi từ chối kết nối***
 
 1 Truy cập MariaDB: Đăng nhập vào máy chủ chứa cơ sở dữ liệu MariaDB bằng tài khoản có quyền quản trị. Bạn có thể sử dụng lệnh sau để đăng nhập vào MariaDB:
+
 ```mysql -u root -p```
 
 2 Thiết lập quyền truy cập cho máy chủ của bạn: MariaDB sử dụng kiểm tra quyền truy cập dựa trên địa chỉ IP. Để cho phép máy chủ của bạn kết nối, bạn cần cấp quyền cho địa chỉ IP của máy chủ đó.
@@ -120,27 +116,47 @@ Lưu ý rằng bạn cần phải thay thế các giá trị này bằng thông 
 ```FLUSH PRIVILEGES;```
 
 4 thoát
+
 ```exit;```
 
-### Sau đó, tải `client.js` lên máy chủ tấn công và tải `api.js` `server.json` `command.json` `settings.json` lên máy chủ API
+## Cài đặt
+
+### API Server
+
 ```
-wget https://raw.githubusercontent.com/DauDau432/Api_L7_Manager/main/api.json
-wget https://raw.githubusercontent.com/DauDau432/Api_L7_Manager/main/commands.json
-wget https://raw.githubusercontent.com/DauDau432/Api_L7_Manager/main/settings.json
-wget https://raw.githubusercontent.com/DauDau432/Api_L7_Manager/main/servers.json
-```
-```
-wget https://raw.githubusercontent.com/DauDau432/Api_L7_Manager/main/client.js
+wget https://raw.githubusercontent.com/pmtpro/ddos-api/main/api.js
+wget https://raw.githubusercontent.com/pmtpro/ddos-api/main/commands.json
+wget https://raw.githubusercontent.com/pmtpro/ddos-api/main/settings.json
+wget https://raw.githubusercontent.com/pmtpro/ddos-api/main/servers.json
 ```
 
-### khởi động
+Chạy lệnh
+
+```sh
+npm i express mysql2
+```
+
+### DDOS SERVER
+
+```
+wget https://raw.githubusercontent.com/pmtpro/ddos-api/main/client.js
+```
+
+## khởi động
+
+API server
+
 ```
 screen -S APIv3 -dm node api.js && screen -r APIv3
 ```
+
+DDOS server
+
 ```
 screen -S CLIENT -dm node client.js && screen -r CLIENT
 ```
-### Proxy ngược
+
+## Proxy ngược
 
 ***Nên tạo proxy ngược bằng Nginx để sử dụng API của bạn:***
 
@@ -156,7 +172,7 @@ server {
 
 Thay thế `'http://backend:3000/api'` bằng IP máy chủ API của bạn
 
-### Sử dụng API
+## Sử dụng API
 
 Gửi yêu cầu tới API bằng các trường bắt buộc
 
