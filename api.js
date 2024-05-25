@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const net = require('net');
-const mysql = require('mysql');
+const mysql = require('mysql2');
 
 const urlRegex = /^(https?:\/\/)[^\s/$.?#].[^\s]*$/;
 const blackList = ['\'', '"', '[', ']', '{', '}', '(', ')', ';', '|', '&', '%', '#', '@'];
